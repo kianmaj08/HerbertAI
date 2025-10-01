@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Frag Herbert!</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    .chat { display:flex; flex-direction:column; gap:12px; background:#fff; padding:16px; border:1px solid #e6e6e6; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,.08); min-height:60vh; }
+    .msg { max-width: 75%; padding:10px 12px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.04); border:1px solid #e6e6e6; white-space:pre-wrap; }
+    .msg.user { align-self:flex-end; background: #fff; }
+    .msg.bot { align-self:flex-start; background: #f2eadf; }
+    .composer { position: sticky; bottom:0; margin-top:16px; display:flex; gap:8px; background:#fff; border:1px solid #e6e6e6; border-radius:12px; padding:8px; box-shadow:0 6px 20px rgba(0,0,0,.08); }
+    .composer input { flex:1; border:none; outline:none; font-size:16px; padding:10px 12px; background:transparent; }
+    .composer button { border:1px solid #e6e6e6; background:#1f1f1f; color:#fff; padding:10px 14px; border-radius:10px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <header class="topbar"><div class="container"><h1>Frag Herbert!</h1></div></header>
+  <main class="container" style="max-width:900px; margin:24px auto;">
+    <a class="back" href="./">← Zur Startseite</a>
+
+    <div id="chat" class="chat" aria-live="polite" aria-label="Chatverlauf"></div>
+
+    <div class="composer" role="form" aria-label="Nachricht senden">
+      <input id="message" type="text" placeholder="Frag mich etwas …" autocomplete="off" />
+      <button id="send">Senden</button>
+    </div>
+    <p class="hint">Hinweis: Dieser Chat fragt ein Sprachmodell von OpenAI (gpt-5-mini) über eine Netlify Function an.</p>
+  </main>
+
+  <script>
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("message");
+    const sendBtn = document.getElementById("send");
+
+    function addMsg(text, who) {
+      const el = document.createElement("div");
+      el.className = "msg " + who;
+      el.textContent = text;
+      chat.appendChild(el);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function send() {
+      const text = input.value.trim();
+      if (!text) return;
+      addMsg(text, "user");
+      input.value = "";
+      try {
+        const res = await fetch("/.netlify/functions/herbert", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await res.json();
+        if (data.reply) addMsg(data.reply, "bot");
+        else addMsg("Fehler: Keine Antwort erhalten.", "bot");
+      } catch (e) {
+        addMsg("Fehler beim Senden. Prüfe Internet oder Server.", "bot");
+      }
+    }
+
+    sendBtn.addEventListener("click", send);
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
+  </script>
+</body>
+</html>
