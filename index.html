@@ -140,6 +140,17 @@ nav a:hover::after, nav a.active::after{transform:scaleX(1)}
 }
 
 </style>
+
+<!-- BEGIN: visibility-fallback -->
+<style>
+  html, body { color: #1b1b1b !important; background: #faf8f3 !important; }
+  h1, h2, h3, h4, h5, h6, p, li, dt, dd, small, span { color: #1b1b1b !important; }
+  a { color: #0b63d1 !important; }
+  /* Ensure images are visible and responsive */
+  img { max-width: 100%; height: auto; }
+</style>
+<!-- END: visibility-fallback -->
+
 </head>
 <body>
   <!-- Scroll Progress -->
